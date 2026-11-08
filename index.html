@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>داستان‌های عجیب</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;padding:20px;background:#080910;color:white;
+ font-family:Tahoma,Arial,sans-serif;
+}
+main{max-width:650px;margin:auto}
+h1{text-align:center;color:#e63946}
+p{color:#aaa;text-align:center}
+.panel{
+ background:#151722;padding:18px;border-radius:16px;
+ border:1px solid #343746;margin:18px 0;
+}
+textarea{
+ width:100%;height:190px;background:#090b13;color:white;
+ border:1px solid #45485a;border-radius:10px;padding:14px;
+ font:16px Tahoma;line-height:2;resize:vertical;
+}
+select,button{
+ width:100%;padding:13px;margin-top:12px;
+ border-radius:10px;font-size:15px;
+}
+select{background:#090b13;color:white;border:1px solid #45485a}
+button{border:0;background:#a51e32;color:white;font-weight:bold}
+button.secondary{background:#343746}
+#caption{
+ min-height:110px;display:flex;align-items:center;
+ justify-content:center;text-align:center;
+ font-size:23px;line-height:2;color:#fff;
+ background:#05060b;border-radius:12px;padding:18px;
+}
+small{color:#aaa;line-height:2}
+</style>
+</head>
+<body>
+<main>
+<h1>👻 داستان‌های عجیب</h1>
+<p>کارگاه ساخت داستان‌های ترسناک</p>
+
+<div class="panel">
+<h3>🎬 داستان خودت رو بنویس</h3>
+<textarea id="story">ساعت سه و هفده دقیقه نیمه‌شب بود...
+
+امیر در خانه تنها بود.
+
+ناگهان سه ضربه به در خورد...
+
+صدایی از پشت در گفت:
+
+امیر... در رو باز کن... منم!
+
+اما امیر خشکش زد...
+
+چون آن صدا، دقیقاً صدای خودش بود!</textarea>
+
+<h3>🎙️ انتخاب صدای گوینده</h3>
+<select id="voices">
+<option value="">انتخاب صدای فارسی گوشی</option>
+</select>
+
+<button onclick="speak()">▶ پخش داستان</button>
+<button class="secondary" onclick="stop()">⏹ توقف صدا</button>
+</div>
+
+<div class="panel">
+<h3>💬 زیرنویس داستان</h3>
+<div id="caption">داستان آماده پخش است...</div>
+<button class="secondary" onclick="nextLine()">نمایش جمله بعدی</button>
+</div>
+
+<div class="panel">
+<h3>📱 راهنمای ساخت فیلم</h3>
+<p>داستان را پخش کن و با ضبط صفحه گوشی، تصویر و گویندگی را ثبت کن.</p>
+<small>برای ساخت ویدئوی نهایی می‌توانی بعداً موسیقی و تصاویر ترسناک اضافه کنی.</small>
+</div>
+</main>
+
+<script>
+const story=document.getElementById('story');
+const voices=document.getElementById('voices');
+const caption=document.getElementById('caption');
+let lines=[],index=0;
+
+function loadVoices(){
+ const list=speechSynthesis.getVoices();
+ voices.innerHTML='<option value="">انتخاب خودکار صدای فارسی</option>';
+ list.forEach((v,i)=>{
+  const o=document.createElement('option');
+  o.value=i;
+  o.textContent=v.name+' ('+v.lang+')';
+  voices.appendChild(o);
+ });
+}
+loadVoices();
+speechSynthesis.onvoiceschanged=loadVoices;
+
+function speak(){
+ stop();
+ lines=story.value.split(/[\n.!؟]+/).map(x=>x.trim()).filter(Boolean);
+ index=0;
+ playNext();
+}
+function playNext(){
+ if(index>=lines.length){
+  caption.textContent='پایان داستان 👻';
+  return;
+ }
+ const line=lines[index];
+ caption.textContent=line;
+ const u=new SpeechSynthesisUtterance(line);
+ u.lang='fa-IR';
+ u.rate=0.82;
+ u.pitch=0.75;
+ const list=speechSynthesis.getVoices();
+ if(voices.value!==''){
+  u.voice=list[Number(voices.value)];
+ }else{
+  const fa=list.find(v=>v.lang.toLowerCase().startsWith('fa'));
+  if(fa)u.voice=fa;
+ }
+ u.onend=()=>{index++;playNext()};
+ speechSynthesis.speak(u);
+}
+function stop(){
+ speechSynthesis.cancel();
+}
+function nextLine(){
+ lines=story.value.split(/[\n.!؟]+/).map(x=>x.trim()).filter(Boolean);
+ index=Math.min(index+1,lines.length-1);
+ caption.textContent=lines[index]||'داستان تمام شد';
+}
+</script>
+</body>
+</html>
